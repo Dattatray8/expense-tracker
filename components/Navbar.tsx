@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { handleSignOut } from "@/helper/client/user";
@@ -8,12 +8,25 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import EditProfileModal from "./EditProfileModal";
 import Link from "next/link";
+import { Moon, Sun } from "lucide-react";
+import { getStoredTheme, setStoredTheme } from "./ThemeScript";
 
 export default function Navbar() {
   const { userData } = useSelector((state: any) => state.user);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    setTheme(getStoredTheme());
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    setStoredTheme(next);
+    setTheme(next);
+  };
 
   const logout = async () => {
     await handleSignOut(router, dispatch);
@@ -27,7 +40,15 @@ export default function Navbar() {
             ExpenseTracker
           </Link>
         </div>
-        <div className="flex-none gap-2">
+        <div className="flex-none gap-2 flex items-center">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm btn-square"
+            onClick={toggleTheme}
+            aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+          >
+            {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
           {userData ? (
             <div className="dropdown dropdown-end">
               <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">

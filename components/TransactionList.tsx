@@ -2,9 +2,15 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { ArrowDownRight, ArrowUpRight, ReceiptText, Download } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, ReceiptText, Download, Pencil, Plus } from "lucide-react";
 
-export default function TransactionList({ transactions }: { transactions: any[] }) {
+interface TransactionListProps {
+  transactions: any[];
+  onEdit?: (tx: any) => void;
+  onAddFirst?: () => void;
+}
+
+export default function TransactionList({ transactions, onEdit, onAddFirst }: TransactionListProps) {
     
     const handleExportCSV = () => {
         if (!transactions || transactions.length === 0) return;
@@ -38,10 +44,17 @@ export default function TransactionList({ transactions }: { transactions: any[] 
     };
     if (!transactions || transactions.length === 0) {
         return (
-            <div className="py-12 flex flex-col items-center justify-center opacity-50 bg-base-100 rounded-2xl border border-base-200">
-                <ReceiptText size={48} className="mb-4" />
-                <p className="text-lg font-medium">No transactions found</p>
-                <p className="text-sm">They will appear here once you add them.</p>
+            <div className="py-12 flex flex-col items-center justify-center bg-base-100 rounded-2xl border border-base-200">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <ReceiptText size={32} className="text-primary" />
+                </div>
+                <p className="text-lg font-semibold text-base-content mb-1">No transactions yet</p>
+                <p className="text-sm text-base-content/60 mb-6 text-center max-w-xs">Add your first income or expense to start tracking.</p>
+                {onAddFirst && (
+                    <button type="button" className="btn btn-primary gap-2" onClick={onAddFirst}>
+                        <Plus size={18} /> Add your first transaction
+                    </button>
+                )}
             </div>
         );
     }
@@ -76,9 +89,16 @@ export default function TransactionList({ transactions }: { transactions: any[] 
                                 </p>
                             </div>
                         </div>
-                        <div className={`font-extrabold text-xl font-mono sm:text-right w-full sm:w-auto ${tx.type === "income" ? "text-success" : "text-error"}`}>
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <div className={`font-extrabold text-xl font-mono ${tx.type === "income" ? "text-success" : "text-error"}`}>
                             {tx.type === "income" ? "+" : "-"}₹{amountStr}
                         </div>
+                        {onEdit && !tx._pending && (
+                            <button type="button" className="btn btn-ghost btn-xs btn-square" onClick={() => onEdit(tx)} aria-label="Edit">
+                                <Pencil size={14} />
+                            </button>
+                        )}
+                    </div>
                     </div>
                     );
                 })}

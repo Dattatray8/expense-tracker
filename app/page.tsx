@@ -13,8 +13,13 @@ import MonthlySummaryCharts from "@/components/MonthlySummaryCharts";
 import DailyTrendChart from "@/components/DailyTrendChart";
 import SmartInsights from "@/components/SmartInsights";
 import OfflineBanner from "@/components/OfflineBanner";
+import BudgetProgress from "@/components/BudgetProgress";
+import InsightCards from "@/components/InsightCards";
+import RecurringCard from "@/components/RecurringCard";
+import InstallPrompt from "@/components/InstallPrompt";
+import EditTransactionModal from "@/components/EditTransactionModal";
 import axios from "axios";
-import { Wallet, TrendingUp, TrendingDown, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, Plus, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import {
   getCachedTransactions,
   setCachedTransactions,
@@ -22,7 +27,6 @@ import {
   setCachedSummary,
   getPendingTransactions,
   clearPendingTransactions,
-  type PendingTransaction,
 } from "@/lib/offlineCache";
 
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -34,13 +38,17 @@ export default function Home() {
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
-  
+  const [editTx, setEditTx] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
+  const [previousMonthSummary, setPreviousMonthSummary] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategoryId, setFilterCategoryId] = useState("");
+  const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]);
 
   useEffect(() => {
     if (status === "authenticated" && !userData) {
@@ -61,9 +69,10 @@ export default function Home() {
       return;
     }
     try {
-      const [txRes, sumRes] = await Promise.all([
+      const [txRes, sumRes, catRes] = await Promise.all([
         axios.get(`/api/transactions?month=${month}&year=${year}`),
         axios.get(`/api/transactions/summary?month=${month}&year=${year}`),
+        axios.get("/api/categories"),
       ]);
       const txList = txRes.data.transactions || [];
       const sumData = sumRes.data;
@@ -71,6 +80,10 @@ export default function Home() {
       setSummary(sumData);
       setCachedTransactions(month, year, txList);
       setCachedSummary(month, year, sumData);
+      setCategories(catRes.data.categories || []);
+      const prevMonth = month === 1 ? 12 : month - 1;
+      const prevYear = month === 1 ? year - 1 : year;
+      axios.get(`/api/transactions/summary?month=${prevMonth}&year=${prevYear}`).then((r) => setPreviousMonthSummary(r.data)).catch(() => setPreviousMonthSummary(null));
     } catch (err) {
       const cachedTx = getCachedTransactions(month, year);
       const cachedSum = getCachedSummary(month, year);
@@ -141,9 +154,20 @@ export default function Home() {
     category: { name: p.categoryName },
     _pending: true,
   }));
-  const displayTransactions = [...transactions, ...pendingAsListItems].sort(
+  let displayTransactions = [...transactions, ...pendingAsListItems].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
+  if (searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    displayTransactions = displayTransactions.filter(
+      (t) =>
+        (t.description || "").toLowerCase().includes(q) ||
+        (t.category?.name || "").toLowerCase().includes(q)
+    );
+  }
+  if (filterCategoryId) {
+    displayTransactions = displayTransactions.filter((t) => t.category?._id === filterCategoryId);
+  }
 
   const handleTransactionAdded = () => {
     fetchDashboardData();
@@ -293,6 +317,18 @@ export default function Home() {
               </div>
             )}
 
+            {/* Insight cards */}
+            {userData?.monthlyIncome > 0 && !loadingData && summary && (
+              <div className="md:col-span-3">
+                <InsightCards
+                  summary={summary}
+                  previousMonthSummary={previousMonthSummary}
+                  selectedMonth={selectedMonth}
+                  selectedYear={selectedYear}
+                />
+              </div>
+            )}
+
             {/* Main Content Render if User setup is complete */}
             {userData?.monthlyIncome > 0 && !loadingData && (
               <>
@@ -300,6 +336,7 @@ export default function Home() {
                 <div className="md:col-span-1 rounded-2xl flex flex-col gap-6">
                     <MonthlySummaryCharts data={summary?.expensesByCategory || []} />
                     <DailyTrendChart data={summary?.dailyData || []} />
+                    <BudgetProgress expensesByCategory={summary?.expensesByCategory || []} />
                     <div className="bg-base-100 rounded-2xl p-6 shadow-sm border border-base-200">
                         <h3 className="font-bold text-lg mb-4 text-base-content/80 border-b border-base-200 pb-2">At a Glance</h3>
                         <div className="flex justify-between items-center mb-3">
@@ -311,18 +348,45 @@ export default function Home() {
                             <span className="font-bold">{summary?.expensesByCategory?.length || 0}</span>
                         </div>
                     </div>
+                    <RecurringCard />
                 </div>
 
                 {/* History + Insights */}
                 <div className="md:col-span-2 flex flex-col gap-6">
                     <div className="bg-base-100 rounded-2xl p-6 shadow-sm border border-base-200 min-h-[320px]">
-                        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+                        <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
                             <h3 className="font-bold text-xl text-base-content">Activity — {MONTH_NAMES[selectedMonth - 1]}</h3>
                             <button className="btn btn-primary btn-sm gap-1" onClick={() => setIsAddTxModalOpen(true)}>
                               <Plus size={16} /> Add New
                             </button>
                         </div>
-                        <TransactionList transactions={displayTransactions} />
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <label className="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-[140px]">
+                            <Search size={16} className="opacity-50" />
+                            <input
+                              type="text"
+                              placeholder="Search..."
+                              className="grow"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                          </label>
+                          <select
+                            className="select select-bordered select-sm w-40"
+                            value={filterCategoryId}
+                            onChange={(e) => setFilterCategoryId(e.target.value)}
+                          >
+                            <option value="">All categories</option>
+                            {categories.filter((c) => c.name).map((c) => (
+                              <option key={c._id} value={c._id}>{c.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <TransactionList
+                          transactions={displayTransactions}
+                          onEdit={(tx) => setEditTx(tx)}
+                          onAddFirst={() => setIsAddTxModalOpen(true)}
+                        />
                     </div>
                     <SmartInsights summary={summary} />
                 </div>
@@ -357,6 +421,13 @@ export default function Home() {
                 onClose={() => setIsAddTxModalOpen(false)}
                 onAdd={handleTransactionAdded}
             />
+            <EditTransactionModal
+                transaction={editTx}
+                isOpen={!!editTx}
+                onClose={() => setEditTx(null)}
+                onSaved={handleTransactionAdded}
+            />
+            <InstallPrompt />
         </>
       )}
     </div>
