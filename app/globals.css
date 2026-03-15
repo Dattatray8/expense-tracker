@@ -1,2 +1,14 @@
 @import "tailwindcss";
 @plugin "daisyui";
+.perspective {
+  perspective: 1200px;
+}
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
+.card-3d:hover {
+  transform: rotateX(10deg) rotateY(-10deg) scale(1.05);
+  box-shadow: 0 40px 70px rgba(0,0,0,0.25);
+}
