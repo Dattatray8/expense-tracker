@@ -19,14 +19,37 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
     date: new Date().toISOString().split('T')[0],
   });
   const [loading, setLoading] = useState(false);
+  const [customCategoryName, setCustomCategoryName] = useState("");
+  const [addingCategory, setAddingCategory] = useState(false);
+
+  const fetchCategories = () => {
+    axios.get("/api/categories")
+      .then(res => setCategories(res.data.categories))
+      .catch(console.error);
+  };
 
   useEffect(() => {
-    if (isOpen) {
-      axios.get("/api/categories")
-        .then(res => setCategories(res.data.categories))
-        .catch(console.error);
-    }
+    if (isOpen) fetchCategories();
   }, [isOpen]);
+
+  const handleAddCustomCategory = async () => {
+    const name = customCategoryName.trim();
+    if (!name) return;
+    setAddingCategory(true);
+    try {
+      const res = await axios.post("/api/categories", { name, type: formData.type });
+      if (res.data.success && res.data.category) {
+        setCategories((prev) => [...prev, res.data.category]);
+        setFormData((f) => ({ ...f, category: res.data.category._id }));
+        setCustomCategoryName("");
+        toast.success("Category added!");
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to add category");
+    } finally {
+      setAddingCategory(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -56,7 +79,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-md">
+      <div className="modal-box max-w-md w-[95%] sm:w-full max-h-[90vh] overflow-y-auto">
         <h3 className="font-bold text-2xl mb-6 text-center">Add Transaction</h3>
         
         <div className="tabs tabs-boxed mb-6 flex justify-center p-1">
@@ -114,6 +137,24 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
                   <option key={c._id} value={c._id}>{c.name}</option>
               ))}
             </select>
+            <div className="flex gap-2 mt-2 flex-wrap">
+              <input
+                type="text"
+                placeholder="Custom category name"
+                className="input input-bordered input-sm flex-1 min-w-[120px]"
+                value={customCategoryName}
+                onChange={(e) => setCustomCategoryName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomCategory())}
+              />
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={handleAddCustomCategory}
+                disabled={addingCategory || !customCategoryName.trim()}
+              >
+                {addingCategory ? "Adding…" : "Add custom"}
+              </button>
+            </div>
           </div>
           
           <div className="form-control">

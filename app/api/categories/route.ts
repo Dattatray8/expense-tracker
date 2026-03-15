@@ -36,3 +36,38 @@ export async function GET() {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+
+export async function POST(req: Request) {
+    try {
+        await connectDB();
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+        const body = await req.json();
+        const { name, type } = body;
+        if (!name || !type) {
+            return NextResponse.json({ error: "Name and type (income/expense) required" }, { status: 400 });
+        }
+        if (!["income", "expense"].includes(type)) {
+            return NextResponse.json({ error: "Type must be income or expense" }, { status: 400 });
+        }
+
+        const trimmedName = String(name).trim();
+        const existing = await Category.findOne({
+            name: new RegExp(`^${trimmedName}$`, "i"),
+            $or: [{ user: null }, { user: session.user.id }],
+        });
+        if (existing) {
+            return NextResponse.json({ error: "Category already exists" }, { status: 400 });
+        }
+
+        const category = await Category.create({
+            name: trimmedName,
+            type,
+            user: session.user.id,
+        });
+        return NextResponse.json({ category, success: true }, { status: 201 });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}

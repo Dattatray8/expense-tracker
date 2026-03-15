@@ -21,9 +21,9 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="navbar bg-base-100 shadow-sm px-4">
-        <div className="flex-1">
-          <Link href="/" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+      <div className="navbar bg-base-100 shadow-sm px-3 sm:px-4">
+        <div className="flex-1 min-w-0">
+          <Link href="/" className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary truncate">
             ExpenseTracker
           </Link>
         </div>

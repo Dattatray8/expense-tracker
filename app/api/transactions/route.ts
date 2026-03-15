@@ -12,11 +12,20 @@ export async function GET(req: Request) {
 
         const { searchParams } = new URL(req.url);
         const limitStr = searchParams.get("limit");
-        
-        let query = Transaction.find({ user: session.user.id })
+        const monthStr = searchParams.get("month");
+        const yearStr = searchParams.get("year");
+
+        let query: any = Transaction.find({ user: session.user.id })
             .sort({ date: -1 })
             .populate("category", "name color icon type");
-            
+
+        if (monthStr && yearStr) {
+            const m = Number(monthStr);
+            const y = Number(yearStr);
+            const start = new Date(y, m - 1, 1);
+            const end = new Date(y, m, 0, 23, 59, 59, 999);
+            query = query.where("date").gte(start).lte(end);
+        }
         if (limitStr) query = query.limit(Number(limitStr));
 
         const transactions = await query;

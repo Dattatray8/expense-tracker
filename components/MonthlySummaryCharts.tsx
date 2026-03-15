@@ -10,10 +10,10 @@ export default function MonthlySummaryCharts({ data }: { data: any[] }) {
     );
     
     // Vibrant professional colors
-    const COLORS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#6B5B95', '#F7B7A3', '#PEA8D2'];
+    const COLORS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#6B5B95', '#F7B7A3', '#9EA8D2'];
 
     return (
-        <div className="h-80 w-full bg-base-100 rounded-2xl p-4 shadow-sm border border-base-200">
+        <div className="h-64 sm:h-80 w-full bg-base-100 rounded-2xl p-4 shadow-sm border border-base-200">
             <h3 className="font-bold text-lg mb-4 text-base-content/80 text-center">Expenses by Category</h3>
             <ResponsiveContainer width="100%" height="85%">
                 <PieChart>

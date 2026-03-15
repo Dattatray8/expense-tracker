@@ -42,6 +42,9 @@ const authOptions: NextAuthOptions = {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      httpOptions: {
+        timeout: 10000, // 10s — default 3500ms often times out on slow networks
+      },
     }),
   ],
   callbacks: {

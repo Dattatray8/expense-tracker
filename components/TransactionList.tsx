@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React from "react";
 import { format } from "date-fns";
 import { ArrowDownRight, ArrowUpRight, ReceiptText, Download } from "lucide-react";
 
@@ -58,24 +60,28 @@ export default function TransactionList({ transactions }: { transactions: any[] 
             </div>
 
             <div className="flex flex-col gap-3">
-                {transactions.map(tx => (
+                {transactions.map((tx) => {
+                    const amountStr = tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    return (
                     <div key={tx._id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-base-100 rounded-2xl shadow-sm border border-base-100/50 hover:shadow-md hover:border-base-300 transition-all duration-300 group gap-4 sm:gap-0">
-                    <div className="flex items-center gap-4 w-full">
-                        <div className={`w-12 h-12 rounded-full flex shrink-0 items-center justify-center shadow-inner group-hover:scale-110 transition-transform ${tx.type === 'income' ? 'bg-success/20 text-success' : 'bg-error/20 text-error'}`}>
-                            {tx.type === 'income' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+                        <div className="flex items-center gap-4 w-full">
+                            <div className={`w-12 h-12 rounded-full flex shrink-0 items-center justify-center shadow-inner group-hover:scale-110 transition-transform ${tx.type === "income" ? "bg-success/20 text-success" : "bg-error/20 text-error"}`}>
+                                {tx.type === "income" ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <p className="font-bold text-base-content text-lg leading-tight truncate">{tx.description || tx.category?.name}</p>
+                                <p className="text-sm font-medium opacity-60 flex items-center gap-1 mt-1 flex-wrap">
+                                    {format(new Date(tx.date), "MMM dd, yyyy")} <span className="opacity-50 mx-1">•</span> <span className="badge badge-sm badge-ghost">{tx.category?.name || "Unknown"}</span>
+                                </p>
+                            </div>
                         </div>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="font-bold text-base-content text-lg leading-tight truncate">{tx.description || tx.category?.name}</p>
-                            <p className="text-sm font-medium opacity-60 flex items-center gap-1 mt-1 flex-wrap">
-                                {format(new Date(tx.date), "MMM dd, yyyy")} <span className="opacity-50 mx-1">•</span> <span className="badge badge-sm badge-ghost">{tx.category?.name || 'Unknown'}</span>
-                            </p>
+                        <div className={`font-extrabold text-xl font-mono sm:text-right w-full sm:w-auto ${tx.type === "income" ? "text-success" : "text-error"}`}>
+                            {tx.type === "income" ? "+" : "-"}₹{amountStr}
                         </div>
                     </div>
-                    <div className={`font-extrabold text-xl font-mono sm:text-right w-full sm:w-auto ${tx.type === 'income' ? 'text-success' : 'text-error'}`}>
-                        {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                </div>
-            ))}
+                    );
+                })}
+            </div>
         </div>
     );
 }

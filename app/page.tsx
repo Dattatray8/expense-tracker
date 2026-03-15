@@ -10,8 +10,12 @@ import EditProfileModal from "@/components/EditProfileModal";
 import AddTransactionModal from "@/components/AddTransactionModal";
 import TransactionList from "@/components/TransactionList";
 import MonthlySummaryCharts from "@/components/MonthlySummaryCharts";
+import DailyTrendChart from "@/components/DailyTrendChart";
+import SmartInsights from "@/components/SmartInsights";
 import axios from "axios";
-import { Wallet, TrendingUp, TrendingDown, Plus } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default function Home() {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,6 +28,8 @@ export default function Home() {
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     if (status === "authenticated" && !userData) {
@@ -35,8 +41,8 @@ export default function Home() {
     setLoadingData(true);
     try {
       const [txRes, sumRes] = await Promise.all([
-        axios.get("/api/transactions"),
-        axios.get("/api/transactions/summary")
+        axios.get(`/api/transactions?month=${selectedMonth}&year=${selectedYear}`),
+        axios.get(`/api/transactions/summary?month=${selectedMonth}&year=${selectedYear}`)
       ]);
       setTransactions(txRes.data.transactions || []);
       setSummary(sumRes.data);
@@ -53,7 +59,7 @@ export default function Home() {
     } else {
         setLoadingData(false);
     }
-  }, [session, userData?.monthlyIncome]);
+  }, [session, userData?.monthlyIncome, selectedMonth, selectedYear]);
 
   const handleTransactionAdded = () => {
     fetchDashboardData(); // Refresh everything instantly
@@ -73,20 +79,20 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary to-secondary text-primary-content py-16 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between text-center md:text-left gap-6">
+      <div className="bg-gradient-to-r from-primary to-secondary text-primary-content py-10 sm:py-16 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between text-center md:text-left gap-4 sm:gap-6">
             <div>
-                <h1 className="text-5xl font-extrabold mb-4 animate-fade-in-up">
-                    Master Your Money{userData ? `, ${userData.username.split(" ")[0]}` : ""}
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-2 sm:mb-4 animate-fade-in-up">
+                    Master Your Money{userData ? `, ${userData.username?.split(" ")[0] || ""}` : ""}
                 </h1>
-                <p className="text-xl opacity-90 max-w-2xl">
+                <p className="text-base sm:text-xl opacity-90 max-w-2xl mx-auto md:mx-0">
                     Track every penny, visualize your spending, and achieve your financial goals.
                 </p>
             </div>
             {session && userData?.monthlyIncome > 0 && (
                 <button 
                     onClick={() => setIsAddTxModalOpen(true)}
-                    className="btn btn-neutral text-neutral-content btn-lg shadow-2xl hover:scale-105 border-0"
+                    className="btn btn-neutral text-neutral-content btn-lg shadow-2xl hover:scale-105 border-0 w-full sm:w-auto"
                 >
                     <Plus size={24} /> Add Transaction
                 </button>
@@ -94,7 +100,7 @@ export default function Home() {
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto p-6 -mt-10 relative z-10">
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 -mt-10 relative z-10">
         {!session ? (
             <div className="card bg-base-100 shadow-2xl overflow-hidden hover:shadow-primary/20 transition-all duration-300">
                 <div className="card-body text-center py-16">
@@ -165,14 +171,51 @@ export default function Home() {
               )}
             </div>
 
+            {/* Month selector */}
+            {userData?.monthlyIncome > 0 && (
+              <div className="md:col-span-3 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-2 bg-base-100 rounded-xl shadow-sm border border-base-200 p-2">
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm btn-square"
+                    onClick={() => {
+                      if (selectedMonth === 1) {
+                        setSelectedMonth(12);
+                        setSelectedYear((y) => y - 1);
+                      } else setSelectedMonth((m) => m - 1);
+                    }}
+                    aria-label="Previous month"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <span className="font-bold text-base-content min-w-[140px] sm:min-w-[180px] text-center text-sm sm:text-base">
+                    {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm btn-square"
+                    onClick={() => {
+                      if (selectedMonth === 12) {
+                        setSelectedMonth(1);
+                        setSelectedYear((y) => y + 1);
+                      } else setSelectedMonth((m) => m + 1);
+                    }}
+                    aria-label="Next month"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Main Content Render if User setup is complete */}
             {userData?.monthlyIncome > 0 && !loadingData && (
               <>
                 {/* Visual Chart Box */}
                 <div className="md:col-span-1 rounded-2xl flex flex-col gap-6">
                     <MonthlySummaryCharts data={summary?.expensesByCategory || []} />
-
-                     <div className="bg-base-100 rounded-2xl p-6 shadow-sm border border-base-200">
+                    <DailyTrendChart data={summary?.dailyData || []} />
+                    <div className="bg-base-100 rounded-2xl p-6 shadow-sm border border-base-200">
                         <h3 className="font-bold text-lg mb-4 text-base-content/80 border-b border-base-200 pb-2">At a Glance</h3>
                         <div className="flex justify-between items-center mb-3">
                             <span className="text-base-content/70">Extra Income</span>
@@ -185,16 +228,18 @@ export default function Home() {
                     </div>
                 </div>
 
-                {/* History Box */}
-                <div className="md:col-span-2">
-                    <div className="bg-base-100 rounded-2xl p-6 shadow-sm border border-base-200 min-h-[400px]">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-xl text-base-content">Recent Activity</h3>
-                            <button className="text-primary font-medium hover:underline text-sm" onClick={() => setIsAddTxModalOpen(true)}>+ Add New</button>
+                {/* History + Insights */}
+                <div className="md:col-span-2 flex flex-col gap-6">
+                    <div className="bg-base-100 rounded-2xl p-6 shadow-sm border border-base-200 min-h-[320px]">
+                        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+                            <h3 className="font-bold text-xl text-base-content">Activity — {MONTH_NAMES[selectedMonth - 1]}</h3>
+                            <button className="btn btn-primary btn-sm gap-1" onClick={() => setIsAddTxModalOpen(true)}>
+                              <Plus size={16} /> Add New
+                            </button>
                         </div>
-                        
                         <TransactionList transactions={transactions} />
                     </div>
+                    <SmartInsights summary={summary} />
                 </div>
               </>
             )}

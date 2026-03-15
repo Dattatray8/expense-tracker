@@ -10,7 +10,7 @@ export default function DailyTrendChart({ data }: { data: any[] }) {
     );
 
     return (
-        <div className="h-80 w-full bg-base-100 rounded-2xl p-4 shadow-sm border border-base-200 flex flex-col">
+        <div className="h-64 sm:h-80 w-full bg-base-100 rounded-2xl p-4 shadow-sm border border-base-200 flex flex-col">
             <h3 className="font-bold text-lg mb-4 text-base-content/80 text-center">Daily Spending Trends</h3>
             <div className="flex-1 min-h-0 w-full">
                 <ResponsiveContainer width="100%" height="100%">
