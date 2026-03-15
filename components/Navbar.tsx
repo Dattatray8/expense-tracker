@@ -23,7 +23,7 @@ export default function Navbar() {
     <>
       <div className="navbar bg-base-100 shadow-sm px-3 sm:px-4">
         <div className="flex-1 min-w-0">
-          <Link href="/" className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary truncate">
+          <Link href="/" className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary truncate">
             ExpenseTracker
           </Link>
         </div>
@@ -42,7 +42,7 @@ export default function Navbar() {
               </div>
               <ul
                 tabIndex={0}
-                className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
+                className="mt-3 z-1 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
               >
                 <li className="menu-title px-4 py-2">
                   <span className="text-base font-semibold text-base-content">{userData?.username}</span>

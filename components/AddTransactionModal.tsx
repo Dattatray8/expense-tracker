@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { getCachedCategories, setCachedCategories, addPendingTransaction } from "@/lib/offlineCache";
 
 interface Category {
   _id: string;
@@ -16,16 +17,29 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
     amount: "",
     type: "expense",
     category: "",
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
   });
   const [loading, setLoading] = useState(false);
   const [customCategoryName, setCustomCategoryName] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
 
   const fetchCategories = () => {
-    axios.get("/api/categories")
-      .then(res => setCategories(res.data.categories))
-      .catch(console.error);
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      const cached = getCachedCategories();
+      if (cached?.length) setCategories(cached);
+      return;
+    }
+    axios
+      .get("/api/categories")
+      .then((res) => {
+        const list = res.data.categories || [];
+        setCategories(list);
+        setCachedCategories(list);
+      })
+      .catch(() => {
+        const cached = getCachedCategories();
+        if (cached?.length) setCategories(cached);
+      });
   };
 
   useEffect(() => {
@@ -58,17 +72,35 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const amount = Number(formData.amount);
+    const categoryName = categories.find((c) => c._id === formData.category)?.name || "Uncategorized";
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      addPendingTransaction({
+        tempId: `pending_${Date.now()}`,
+        amount,
+        type: formData.type as "income" | "expense",
+        category: formData.category,
+        categoryName,
+        date: formData.date,
+        description: formData.name,
+      });
+      toast.success("Saved offline. Will sync when you're back online.");
+      onAdd(null);
+      onClose();
+      setFormData({ ...formData, name: "", amount: "" });
+      setLoading(false);
+      return;
+    }
+
     try {
-      const payload = {
-          ...formData,
-          amount: Number(formData.amount)
-      }
+      const payload = { ...formData, amount };
       const res = await axios.post("/api/transactions", payload);
       if (res.data.success) {
         toast.success("Transaction added!");
-        onAdd(res.data.transaction); // Pass back updated tx to refresh UI
+        onAdd(res.data.transaction);
         onClose();
-        setFormData({ ...formData, name: "", amount: "" }); // reset
+        setFormData({ ...formData, name: "", amount: "" });
       }
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to add transaction");
@@ -150,7 +182,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
                 type="button"
                 className="btn btn-ghost btn-sm"
                 onClick={handleAddCustomCategory}
-                disabled={addingCategory || !customCategoryName.trim()}
+                disabled={addingCategory || !customCategoryName.trim() || (typeof navigator !== "undefined" && !navigator.onLine)}
               >
                 {addingCategory ? "Adding…" : "Add custom"}
               </button>

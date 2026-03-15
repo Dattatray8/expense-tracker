@@ -72,6 +72,7 @@ export default function TransactionList({ transactions }: { transactions: any[] 
                                 <p className="font-bold text-base-content text-lg leading-tight truncate">{tx.description || tx.category?.name}</p>
                                 <p className="text-sm font-medium opacity-60 flex items-center gap-1 mt-1 flex-wrap">
                                     {format(new Date(tx.date), "MMM dd, yyyy")} <span className="opacity-50 mx-1">•</span> <span className="badge badge-sm badge-ghost">{tx.category?.name || "Unknown"}</span>
+                                    {tx._pending && <span className="badge badge-sm badge-warning">Pending sync</span>}
                                 </p>
                             </div>
                         </div>

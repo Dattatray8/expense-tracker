@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { getUser } from "@/helper/client/user";
@@ -12,8 +12,18 @@ import TransactionList from "@/components/TransactionList";
 import MonthlySummaryCharts from "@/components/MonthlySummaryCharts";
 import DailyTrendChart from "@/components/DailyTrendChart";
 import SmartInsights from "@/components/SmartInsights";
+import OfflineBanner from "@/components/OfflineBanner";
 import axios from "axios";
 import { Wallet, TrendingUp, TrendingDown, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  getCachedTransactions,
+  setCachedTransactions,
+  getCachedSummary,
+  setCachedSummary,
+  getPendingTransactions,
+  clearPendingTransactions,
+  type PendingTransaction,
+} from "@/lib/offlineCache";
 
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -25,11 +35,12 @@ export default function Home() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
   
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
 
   useEffect(() => {
     if (status === "authenticated" && !userData) {
@@ -37,32 +48,105 @@ export default function Home() {
     }
   }, [status, dispatch, userData]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoadingData(true);
+    const month = selectedMonth;
+    const year = selectedYear;
+    if (!navigator.onLine) {
+      const cachedTx = getCachedTransactions(month, year);
+      const cachedSum = getCachedSummary(month, year);
+      setTransactions(cachedTx || []);
+      setSummary(cachedSum || null);
+      setLoadingData(false);
+      return;
+    }
     try {
       const [txRes, sumRes] = await Promise.all([
-        axios.get(`/api/transactions?month=${selectedMonth}&year=${selectedYear}`),
-        axios.get(`/api/transactions/summary?month=${selectedMonth}&year=${selectedYear}`)
+        axios.get(`/api/transactions?month=${month}&year=${year}`),
+        axios.get(`/api/transactions/summary?month=${month}&year=${year}`),
       ]);
-      setTransactions(txRes.data.transactions || []);
-      setSummary(sumRes.data);
+      const txList = txRes.data.transactions || [];
+      const sumData = sumRes.data;
+      setTransactions(txList);
+      setSummary(sumData);
+      setCachedTransactions(month, year, txList);
+      setCachedSummary(month, year, sumData);
     } catch (err) {
-      console.error(err);
+      const cachedTx = getCachedTransactions(month, year);
+      const cachedSum = getCachedSummary(month, year);
+      setTransactions(cachedTx || []);
+      setSummary(cachedSum || null);
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    const onOnline = () => {
+      setIsOnline(true);
+    };
+    const onOffline = () => setIsOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (session?.user && userData?.monthlyIncome > 0) {
       fetchDashboardData();
     } else {
-        setLoadingData(false);
+      setLoadingData(false);
     }
-  }, [session, userData?.monthlyIncome, selectedMonth, selectedYear]);
+  }, [session, userData?.monthlyIncome, selectedMonth, selectedYear, fetchDashboardData]);
+
+  const syncPendingTransactions = useCallback(async () => {
+    const pending = getPendingTransactions();
+    if (pending.length === 0) return;
+    for (const tx of pending) {
+      try {
+        await axios.post("/api/transactions", {
+          amount: tx.amount,
+          type: tx.type,
+          category: tx.category,
+          date: tx.date,
+          name: tx.description,
+        });
+      } catch {
+        break;
+      }
+    }
+    clearPendingTransactions();
+    await fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    if (isOnline && session?.user && userData?.monthlyIncome > 0 && getPendingTransactions().length > 0) {
+      syncPendingTransactions();
+    }
+  }, [isOnline]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pendingForMonth = getPendingTransactions().filter((p) => {
+    const [y, m] = p.date.split("-").map(Number);
+    return m === selectedMonth && y === selectedYear;
+  });
+  const pendingAsListItems = pendingForMonth.map((p) => ({
+    _id: p.tempId,
+    amount: p.amount,
+    type: p.type,
+    date: p.date,
+    description: p.description,
+    category: { name: p.categoryName },
+    _pending: true,
+  }));
+  const displayTransactions = [...transactions, ...pendingAsListItems].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   const handleTransactionAdded = () => {
-    fetchDashboardData(); // Refresh everything instantly
+    fetchDashboardData();
   };
 
   if (status === "loading" || (session && !userData)) {
@@ -77,9 +161,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-base-200 pb-20">
       <Navbar />
-      
+      {!isOnline && <OfflineBanner />}
+
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary to-secondary text-primary-content py-10 sm:py-16 px-4 sm:px-6">
+      <div className="bg-linear-to-r from-primary to-secondary text-primary-content py-10 sm:py-16 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between text-center md:text-left gap-4 sm:gap-6">
             <div>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-2 sm:mb-4 animate-fade-in-up">
@@ -122,7 +207,7 @@ export default function Home() {
             {/* Conditional Salary Banner/Card */}
             <div className="md:col-span-3">
               {(!userData?.monthlyIncome || userData.monthlyIncome === 0) ? (
-                <div className="alert shadow-xl bg-gradient-to-r from-warning/20 to-error/20 border-l-4 border-error rounded-xl p-6">
+                <div className="alert shadow-xl bg-linear-to-r from-warning/20 to-error/20 border-l-4 border-error rounded-xl p-6">
                   <Wallet size={36} className="text-error" />
                   <div className="flex-1">
                     <h3 className="font-bold text-xl text-base-content">Let's Get Started!</h3>
@@ -237,13 +322,18 @@ export default function Home() {
                               <Plus size={16} /> Add New
                             </button>
                         </div>
-                        <TransactionList transactions={transactions} />
+                        <TransactionList transactions={displayTransactions} />
                     </div>
                     <SmartInsights summary={summary} />
                 </div>
               </>
             )}
             
+            {userData?.monthlyIncome > 0 && !isOnline && !loadingData && !summary && (
+              <div className="md:col-span-3 alert alert-info shadow-lg">
+                <span>You&apos;re offline and there&apos;s no cached data for this month. Connect to the internet to load your dashboard.</span>
+              </div>
+            )}
             {userData?.monthlyIncome > 0 && loadingData && (
                 <div className="md:col-span-3 flex justify-center py-20">
                     <span className="loading loading-spinner text-primary loading-lg"></span>
