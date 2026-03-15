@@ -66,15 +66,29 @@ export async function PUT(request: NextRequest) {
         const formData = await request.formData();
         const name = formData.get("name") as string;
         const file = formData.get("file") as Blob | null;
+        const monthlyIncome = formData.get("monthlyIncome");
+        
         const updateData: any = {username: name};
+
+        if (monthlyIncome !== null) {
+            const parsedIncome = Number(monthlyIncome);
+            if (!isNaN(parsedIncome) && parsedIncome >= 0) {
+                updateData.monthlyIncome = parsedIncome;
+            }
+        }
 
         if (file) {
             updateData.image = await uploadOnCloudinary(file);
         }
 
-        const user = await User.findByIdAndUpdate(session.user.id, updateData, {
+        // Add explicit console to debug backend incoming requests
+        console.log("Updating User with Data:", updateData);
+
+        const user = await User.findByIdAndUpdate(session.user.id, { $set: updateData }, {
             new: true,
+            runValidators: true
         });
+        console.log("Updated User:", user);
         if (!user) {
             return NextResponse.json(
                 {

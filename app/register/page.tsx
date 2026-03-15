@@ -40,8 +40,11 @@ const Page = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-base-200">
-      <div className="card w-96 bg-base-100 shadow-xl p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
+      <div className="card w-full max-w-sm bg-base-100 shadow-xl p-8 mx-4 sm:mx-0">
+        <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold mb-1">Create Account</h2>
+            <p className="text-base-content/60 text-sm">Join us today</p>
+        </div>
 
         <div className="flex flex-col gap-4">
           {/* Username */}
@@ -131,10 +134,10 @@ const Page = () => {
             Continue with Google
           </button>
           {/* Login Link */}
-          <p className="text-center text-sm mt-2">
+          <p className="text-center text-sm mt-4">
             Already have an account?
             <span
-              className="link link-primary ml-1 cursor-pointer"
+              className="link link-primary font-medium ml-1 cursor-pointer"
               onClick={() => router.push("/login")}
             >
               Login

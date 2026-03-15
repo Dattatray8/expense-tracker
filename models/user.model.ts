@@ -6,6 +6,7 @@ interface IUser {
     image?: string;
     email: string;
     password?: string;
+    monthlyIncome?: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -20,6 +21,10 @@ const userSchema = new mongoose.Schema<IUser>(
         },
         password: String,
         image: String,
+        monthlyIncome: {
+            type: Number,
+            default: 0
+        }
     },
     { timestamps: true },
 );

@@ -15,9 +15,12 @@ const Page = () => {
   const router = useRouter();
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-base-200 perspective">
-      <div className="card w-96 bg-base-100 shadow-xl p-8 transition-all duration-500 transform hover:rotate-x-6 hover:-rotate-y-6 hover:scale-105 hover:shadow-2xl">
-        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+    <div className="flex justify-center items-center min-h-screen bg-base-200">
+      <div className="card w-full max-w-sm bg-base-100 shadow-xl p-8 duration-500 hover:shadow-2xl mx-4 sm:mx-0">
+        <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold mb-1">Login</h2>
+            <p className="text-base-content/60 text-sm">Sign in to your account</p>
+        </div>
 
         <div className="flex flex-col gap-4">
           {/* Email */}
@@ -71,18 +74,8 @@ const Page = () => {
             />
           </label>
 
-          {/* Remember + Forgot */}
-          <div className="flex justify-between text-sm mt-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                className="checkbox checkbox-primary checkbox-sm"
-              />
-              Remember me
-            </label>
-
-            <span className="link link-primary">Forgot password?</span>
-          </div>
+          {/* Minimal spacing before button */}
+          <div className="mt-2"></div>
 
           {/* Login Button */}
           <button
@@ -132,10 +125,10 @@ const Page = () => {
           </button>
 
           {/* Signup Link */}
-          <p className="text-center text-sm mt-3">
+          <p className="text-center text-sm mt-4">
             Don't have an account?
             <span
-              className="link link-primary ml-1"
+              className="link link-primary font-medium ml-1"
               onClick={() => router.push("/register")}
             >
               Sign Up

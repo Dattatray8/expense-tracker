@@ -6,7 +6,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 
 export const getUser = async (dispatch: AppDispatch) => {
   try {
-    const res = await axios.get("/api/v1/user", { withCredentials: true });
+    const res = await axios.get("/api/user", { withCredentials: true });
     dispatch(setUserData(res?.data.user));
   } catch (error: any) {
     console.log(error);
