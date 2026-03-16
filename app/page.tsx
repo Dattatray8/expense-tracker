@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { getUser } from "@/helper/client/user";
 import { useSession } from "next-auth/react";
+import { user } from "@/types/redux.types";
 import EditProfileModal from "@/components/EditProfileModal";
 import AddTransactionModal from "@/components/AddTransactionModal";
 import TransactionList from "@/components/TransactionList";
@@ -34,14 +35,14 @@ const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "Ju
 export default function Home() {
   const dispatch = useDispatch<AppDispatch>();
   const { data: session, status } = useSession();
-  const { userData } = useSelector((state: any) => state.user);
+  const { userData } = useSelector((state: user) => state.user);
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
-  const [editTx, setEditTx] = useState<any>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [summary, setSummary] = useState<any>(null);
-  const [previousMonthSummary, setPreviousMonthSummary] = useState<any>(null);
+  const [editTx, setEditTx] = useState<unknown>(null);
+  const [transactions, setTransactions] = useState<unknown[]>([]);
+  const [summary, setSummary] = useState<unknown>(null);
+  const [previousMonthSummary, setPreviousMonthSummary] = useState<unknown>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -84,7 +85,7 @@ export default function Home() {
       const prevMonth = month === 1 ? 12 : month - 1;
       const prevYear = month === 1 ? year - 1 : year;
       axios.get(`/api/transactions/summary?month=${prevMonth}&year=${prevYear}`).then((r) => setPreviousMonthSummary(r.data)).catch(() => setPreviousMonthSummary(null));
-    } catch (err) {
+    } catch {
       const cachedTx = getCachedTransactions(month, year);
       const cachedSum = getCachedSummary(month, year);
       setTransactions(cachedTx || []);
@@ -234,7 +235,7 @@ export default function Home() {
                 <div className="alert shadow-xl bg-linear-to-r from-warning/20 to-error/20 border-l-4 border-error rounded-xl p-6">
                   <Wallet size={36} className="text-error" />
                   <div className="flex-1">
-                    <h3 className="font-bold text-xl text-base-content">Let's Get Started!</h3>
+                    <h3 className="font-bold text-xl text-base-content">Let&apos;s Get Started!</h3>
                     <div className="text-base-content/80 text-base">Add your monthly salary to unlock the dashboard and spending insights.</div>
                   </div>
                   <button onClick={() => setIsEditModalOpen(true)} className="btn btn-error text-error-content shadow-lg hover:shadow-error/50">

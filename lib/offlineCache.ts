@@ -5,7 +5,7 @@
 
 const P = "et_";
 
-export function getCachedTransactions(month: number, year: number): any[] | null {
+export function getCachedTransactions(month: number, year: number): unknown[] | null {
   try {
     const raw = localStorage.getItem(`${P}tx_${year}_${month}`);
     return raw ? JSON.parse(raw) : null;
@@ -14,13 +14,13 @@ export function getCachedTransactions(month: number, year: number): any[] | null
   }
 }
 
-export function setCachedTransactions(month: number, year: number, data: any[]): void {
+export function setCachedTransactions(month: number, year: number, data: unknown[]): void {
   try {
     localStorage.setItem(`${P}tx_${year}_${month}`, JSON.stringify(data));
   } catch {}
 }
 
-export function getCachedSummary(month: number, year: number): any | null {
+export function getCachedSummary(month: number, year: number): unknown | null {
   try {
     const raw = localStorage.getItem(`${P}summary_${year}_${month}`);
     return raw ? JSON.parse(raw) : null;
@@ -29,13 +29,13 @@ export function getCachedSummary(month: number, year: number): any | null {
   }
 }
 
-export function setCachedSummary(month: number, year: number, data: any): void {
+export function setCachedSummary(month: number, year: number, data: unknown): void {
   try {
     localStorage.setItem(`${P}summary_${year}_${month}`, JSON.stringify(data));
   } catch {}
 }
 
-export function getCachedCategories(): any[] | null {
+export function getCachedCategories(): unknown[] | null {
   try {
     const raw = localStorage.getItem(`${P}categories`);
     return raw ? JSON.parse(raw) : null;
@@ -44,7 +44,7 @@ export function getCachedCategories(): any[] | null {
   }
 }
 
-export function setCachedCategories(data: any[]): void {
+export function setCachedCategories(data: unknown[]): void {
   try {
     localStorage.setItem(`${P}categories`, JSON.stringify(data));
   } catch {}

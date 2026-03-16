@@ -1,7 +1,7 @@
 "use client";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-export default function DailyTrendChart({ data }: { data: any[] }) {
+export default function DailyTrendChart({ data }: { data: unknown[] }) {
     if(!data || data.length === 0) return (
         <div className="flex flex-col justify-center items-center h-64 opacity-50 bg-base-100 rounded-2xl border border-base-200">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
@@ -47,7 +47,7 @@ export default function DailyTrendChart({ data }: { data: any[] }) {
                         />
                         <Tooltip 
                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                            formatter={(value: any, name: string) => [`₹${Number(value).toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]}
+                            formatter={(value: unknown, name: string) => [`₹${Number(value).toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]}
                             labelFormatter={(label) => `Day ${label}`}
                         />
                         <Legend verticalAlign="top" height={36}/>

@@ -5,7 +5,7 @@ export interface user {
       username: string;
       email: string;
       image: string;
-      [prop: string]: any;
+      [prop: string]: unknown;
     };
     authUser: {
       username: string;

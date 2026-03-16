@@ -10,7 +10,13 @@ interface Category {
   type: "income" | "expense";
 }
 
-export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
+interface AddTransactionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (transaction: unknown) => void;
+}
+
+export default function AddTransactionModal({ isOpen, onClose, onAdd }: AddTransactionModalProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -58,8 +64,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
         setCustomCategoryName("");
         toast.success("Category added!");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Failed to add category");
+    } catch (err) {
+      toast.error(err instanceof axios.AxiosError ? err.response?.data?.error : "Failed to add category");
     } finally {
       setAddingCategory(false);
     }
@@ -100,10 +106,10 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: any) {
         toast.success("Transaction added!");
         onAdd(res.data.transaction);
         onClose();
-        setFormData({ ...formData, name: "", amount: "" });
+        setFormData({ ...formData, name: "" , amount: "" });
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Failed to add transaction");
+    } catch (err) {
+      toast.error(err instanceof axios.AxiosError ? err.response?.data?.error : "Failed to add transaction");
     } finally {
       setLoading(false);
     }

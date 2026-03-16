@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 import { handleGoogleAuth, handleLogin } from "@/helper/client/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { user } from "@/types/redux.types";
@@ -126,7 +125,7 @@ const Page = () => {
 
           {/* Signup Link */}
           <p className="text-center text-sm mt-4">
-            Don't have an account?
+            Don&apos;t have an account?
             <span
               className="link link-primary font-medium ml-1"
               onClick={() => router.push("/register")}

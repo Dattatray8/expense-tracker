@@ -6,7 +6,7 @@ import {getServerSession} from "next-auth";
 import {NextRequest, NextResponse} from "next/server";
 import uploadOnCloudinary from "@/lib/cloudinary";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         await connectDB();
         const session = await getServerSession(authOptions);
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
             {
                 success: false,
                 message: "Error in fetching profile",
-                error,
+                error: error instanceof Error ? error.message : "Internal Server Error",
             },
             {status: 500},
         );
@@ -68,7 +68,7 @@ export async function PUT(request: NextRequest) {
         const file = formData.get("file") as Blob | null;
         const monthlyIncome = formData.get("monthlyIncome");
         
-        const updateData: any = {username: name};
+        const updateData: Record<string, unknown> = {username: name};
 
         if (monthlyIncome !== null) {
             const parsedIncome = Number(monthlyIncome);
@@ -101,7 +101,7 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json(
             {
                 success: true,
-                message: "Profile Updated Successfully",
+                message: "User updated successfully",
                 user,
             },
             {status: 200},
@@ -112,7 +112,7 @@ export async function PUT(request: NextRequest) {
             {
                 success: false,
                 message: "Error in updating profile",
-                error,
+                error: error instanceof Error ? error.message : "Internal Server Error",
             },
             {status: 500},
         );

@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { user } from "@/types/redux.types";
 import { handleGoogleAuth, handleSignUp } from "@/helper/client/auth";
@@ -16,27 +15,6 @@ const Page = () => {
   });
   const dispatch = useDispatch();
   const { authLoad } = useSelector((state: user) => state.user);
-
-  const handleSignup = () => {
-    const isReady =
-      formValue.username.length >= 3 &&
-      formValue.username.length <= 30 &&
-      formValue.email.includes("@") &&
-      formValue.password.length >= 8;
-    if (!isReady) {
-      toast.error("Please fill all fields correctly.");
-      return;
-    }
-    console.log("User Data:", formValue);
-
-    // you can add API call here later
-
-    // redirect to login page
-    router.push("/login");
-
-    // or redirect to home page
-    // router.push("/");
-  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-base-200">

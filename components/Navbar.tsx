@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { handleSignOut } from "@/helper/client/user";
@@ -9,10 +9,11 @@ import Image from "next/image";
 import EditProfileModal from "./EditProfileModal";
 import Link from "next/link";
 import { Moon, Sun } from "lucide-react";
-import { getStoredTheme, setStoredTheme } from "./ThemeScript";
+import { setStoredTheme } from "./ThemeScript";
+import { user } from "@/types/redux.types";
 
 export default function Navbar() {
-  const { userData } = useSelector((state: any) => state.user);
+  const { userData } = useSelector((state: user) => state.user);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

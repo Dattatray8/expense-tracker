@@ -8,7 +8,7 @@ export const getUser = async (dispatch: AppDispatch) => {
   try {
     const res = await axios.get("/api/user", { withCredentials: true });
     dispatch(setUserData(res?.data.user));
-  } catch (error: any) {
+  } catch (error) {
     console.log(error);
   }
 };

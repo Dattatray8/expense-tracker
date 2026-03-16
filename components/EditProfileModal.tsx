@@ -8,7 +8,7 @@ import { getUser } from "@/helper/client/user";
 import toast from "react-hot-toast";
 
 interface EditProfileModalProps {
-  user: any;
+  user: unknown;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -44,8 +44,8 @@ export default function EditProfileModal({ user, isOpen, onClose }: EditProfileM
         await getUser(dispatch); // Fetch updated data
         onClose();
       }
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Error updating profile");
+    } catch (error) {
+      toast.error(error instanceof axios.AxiosError ? error.response?.data?.message : "Error updating profile");
     } finally {
       setLoading(false);
     }

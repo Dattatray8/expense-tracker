@@ -14,8 +14,8 @@ export async function GET() {
       .populate("category", "name type")
       .sort({ createdAt: -1 });
     return NextResponse.json({ limits }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       { new: true, upsert: true }
     ).populate("category", "name type");
     return NextResponse.json({ limit, success: true }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
   }
 }

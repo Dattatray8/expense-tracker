@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IBudgetLimit extends Document {
   user: mongoose.Types.ObjectId;

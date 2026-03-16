@@ -27,8 +27,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     ).populate("category", "name color icon type");
     if (!tx) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     return NextResponse.json({ transaction: tx, success: true }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -42,7 +42,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const tx = await Transaction.findOneAndDelete({ _id: id, user: session.user.id });
     if (!tx) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
   }
 }

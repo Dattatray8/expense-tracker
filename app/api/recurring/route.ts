@@ -14,8 +14,8 @@ export async function GET() {
       .populate("category", "name type")
       .sort({ dayOfMonth: 1 });
     return NextResponse.json({ recurring: list }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     });
     const populated = await Recurring.findById(rec._id).populate("category", "name type");
     return NextResponse.json({ recurring: populated, success: true }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
   }
 }

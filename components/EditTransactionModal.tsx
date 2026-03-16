@@ -10,8 +10,24 @@ interface Category {
   type: "income" | "expense";
 }
 
+interface Transaction {
+  _id: string;
+  amount: number;
+  type: "income" | "expense";
+  category?: {
+    _id: string;
+    name: string;
+    color?: string;
+    icon?: string;
+    type: "income" | "expense";
+  };
+  date: string | Date;
+  description?: string;
+  _pending?: boolean;
+}
+
 interface EditTransactionModalProps {
-  transaction: any;
+  transaction: Transaction | null;
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
@@ -55,8 +71,8 @@ export default function EditTransactionModal({ transaction, isOpen, onClose, onS
       toast.success("Transaction updated");
       onSaved();
       onClose();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Update failed");
+    } catch (err) {
+      toast.error(err instanceof axios.AxiosError ? err.response?.data?.error : "Update failed");
     } finally {
       setLoading(false);
     }
@@ -70,8 +86,8 @@ export default function EditTransactionModal({ transaction, isOpen, onClose, onS
       toast.success("Transaction deleted");
       onSaved();
       onClose();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Delete failed");
+    } catch (err) {
+      toast.error(err instanceof axios.AxiosError ? err.response?.data?.error : "Delete failed");
     } finally {
       setDeleting(false);
     }

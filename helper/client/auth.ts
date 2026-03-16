@@ -26,9 +26,13 @@ export const handleSignUp = async ({
     console.log(res.data);
     toast.success(res?.data?.message);
     dispatch(setUserData(res?.data?.user));
-  } catch (error: any) {
-    console.log(error.response);
-    toast.error(error?.response?.data?.message || error?.message);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log(error.response);
+      toast.error(error.response?.data?.message || error.message);
+    } else {
+      toast.error(error instanceof Error ? error.message : "An unknown error occurred");
+    }
     dispatch(setAuthLoad(false));
   } finally {
     dispatch(setAuthLoad(false));
@@ -60,8 +64,8 @@ export const handleLogin = async ({
     } else {
       toast.error(res?.error || "Invalid Credentials");
     }
-  } catch (error: any) {
-    toast.error(error);
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : String(error));
     dispatch(setAuthLoad(false));
   } finally {
     dispatch(setAuthLoad(false));
