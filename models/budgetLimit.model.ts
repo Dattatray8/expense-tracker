@@ -19,6 +19,6 @@ const budgetLimitSchema = new Schema<IBudgetLimit>(
 
 budgetLimitSchema.index({ user: 1, category: 1 }, { unique: true });
 
-delete mongoose.models.BudgetLimit;
-const BudgetLimit: Model<IBudgetLimit> = mongoose.model("BudgetLimit", budgetLimitSchema);
+const BudgetLimit = mongoose.models?.BudgetLimit || mongoose.model("BudgetLimit", budgetLimitSchema);
+
 export default BudgetLimit;

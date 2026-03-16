@@ -18,10 +18,6 @@ export default function Navbar() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [theme, setTheme] = useState("light");
 
-  useEffect(() => {
-    setTheme(getStoredTheme());
-  }, []);
-
   const toggleTheme = () => {
     const next = theme === "light" ? "dark" : "light";
     setStoredTheme(next);
