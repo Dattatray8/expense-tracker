@@ -13,7 +13,7 @@ interface Category {
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (transaction: unknown) => void;
+  onAdd: (transaction?: unknown) => void;
 }
 
 export default function AddTransactionModal({ isOpen, onClose, onAdd }: AddTransactionModalProps) {
@@ -31,19 +31,19 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd }: AddTrans
 
   const fetchCategories = () => {
     if (typeof navigator !== "undefined" && !navigator.onLine) {
-      const cached = getCachedCategories();
+      const cached = getCachedCategories() as Category[] | null;
       if (cached?.length) setCategories(cached);
       return;
     }
     axios
       .get("/api/categories")
       .then((res) => {
-        const list = res.data.categories || [];
+        const list = (res.data.categories || []) as Category[];
         setCategories(list);
         setCachedCategories(list);
       })
       .catch(() => {
-        const cached = getCachedCategories();
+        const cached = getCachedCategories() as Category[] | null;
         if (cached?.length) setCategories(cached);
       });
   };

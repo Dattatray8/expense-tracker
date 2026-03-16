@@ -3,18 +3,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { ArrowDownRight, ArrowUpRight, ReceiptText, Download, Pencil, Plus } from "lucide-react";
-
-interface Transaction {
-  _id: string;
-  date: string | Date;
-  type: "income" | "expense";
-  category?: {
-    name: string;
-  };
-  description?: string;
-  amount: number;
-  _pending?: boolean;
-}
+import { Transaction } from "@/types/transaction.types";
 
 interface TransactionListProps {
   transactions: Transaction[];

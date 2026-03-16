@@ -15,17 +15,20 @@ export async function GET(req: Request) {
         const monthStr = searchParams.get("month");
         const yearStr = searchParams.get("year");
 
-        const query = Transaction.find({ user: session.user.id })
-            .sort({ date: -1 })
-            .populate("category", "name color icon type");
+        const filter: Record<string, unknown> = { user: session.user.id };
 
         if (monthStr && yearStr) {
             const m = Number(monthStr);
             const y = Number(yearStr);
             const start = new Date(y, m - 1, 1);
             const end = new Date(y, m, 0, 23, 59, 59, 999);
-            query.where("date").gte(start).lte(end);
+            filter.date = { $gte: start, $lte: end };
         }
+
+        const query = Transaction.find(filter)
+            .sort({ date: -1 })
+            .populate("category", "name color icon type");
+
         if (limitStr) query.limit(Number(limitStr));
 
         const transactions = await query;

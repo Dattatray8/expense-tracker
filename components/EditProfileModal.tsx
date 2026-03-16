@@ -8,7 +8,11 @@ import { getUser } from "@/helper/client/user";
 import toast from "react-hot-toast";
 
 interface EditProfileModalProps {
-  user: unknown;
+  user: {
+    username: string;
+    monthlyIncome: number;
+    image?: string;
+  };
   isOpen: boolean;
   onClose: () => void;
 }
@@ -79,7 +83,7 @@ export default function EditProfileModal({ user, isOpen, onClose }: EditProfileM
               type="number"
               min="0"
               value={monthlyIncome}
-              onChange={(e) => setMonthlyIncome(e.target.value)}
+              onChange={(e) => setMonthlyIncome(Number(e.target.value))}
               className="input input-bordered w-full"
               required
             />

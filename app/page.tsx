@@ -7,6 +7,7 @@ import { AppDispatch } from "@/redux/store";
 import { getUser } from "@/helper/client/user";
 import { useSession } from "next-auth/react";
 import { user } from "@/types/redux.types";
+import { Transaction } from "@/types/transaction.types";
 import EditProfileModal from "@/components/EditProfileModal";
 import AddTransactionModal from "@/components/AddTransactionModal";
 import TransactionList from "@/components/TransactionList";
@@ -32,6 +33,18 @@ import {
 
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+interface SummaryData {
+  month: number;
+  year: number;
+  baseIncome: number;
+  transactionIncome: number;
+  totalExpense: number;
+  totalIncome: number;
+  remainingBalance: number;
+  expensesByCategory: { name: string; value: number }[];
+  dailyData: { day: number; income: number; expense: number }[];
+}
+
 export default function Home() {
   const dispatch = useDispatch<AppDispatch>();
   const { data: session, status } = useSession();
@@ -39,10 +52,10 @@ export default function Home() {
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
-  const [editTx, setEditTx] = useState<unknown>(null);
-  const [transactions, setTransactions] = useState<unknown[]>([]);
-  const [summary, setSummary] = useState<unknown>(null);
-  const [previousMonthSummary, setPreviousMonthSummary] = useState<unknown>(null);
+  const [editTx, setEditTx] = useState<Transaction | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summary, setSummary] = useState<SummaryData | null>(null);
+  const [previousMonthSummary, setPreviousMonthSummary] = useState<SummaryData | null>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -62,8 +75,8 @@ export default function Home() {
     const month = selectedMonth;
     const year = selectedYear;
     if (!navigator.onLine) {
-      const cachedTx = getCachedTransactions(month, year);
-      const cachedSum = getCachedSummary(month, year);
+      const cachedTx = getCachedTransactions(month, year) as Transaction[] | null;
+      const cachedSum = getCachedSummary(month, year) as SummaryData | null;
       setTransactions(cachedTx || []);
       setSummary(cachedSum || null);
       setLoadingData(false);
@@ -75,8 +88,8 @@ export default function Home() {
         axios.get(`/api/transactions/summary?month=${month}&year=${year}`),
         axios.get("/api/categories"),
       ]);
-      const txList = txRes.data.transactions || [];
-      const sumData = sumRes.data;
+      const txList = (txRes.data.transactions || []) as Transaction[];
+      const sumData = sumRes.data as SummaryData;
       setTransactions(txList);
       setSummary(sumData);
       setCachedTransactions(month, year, txList);
@@ -84,10 +97,10 @@ export default function Home() {
       setCategories(catRes.data.categories || []);
       const prevMonth = month === 1 ? 12 : month - 1;
       const prevYear = month === 1 ? year - 1 : year;
-      axios.get(`/api/transactions/summary?month=${prevMonth}&year=${prevYear}`).then((r) => setPreviousMonthSummary(r.data)).catch(() => setPreviousMonthSummary(null));
+      axios.get(`/api/transactions/summary?month=${prevMonth}&year=${prevYear}`).then((r) => setPreviousMonthSummary(r.data as SummaryData)).catch(() => setPreviousMonthSummary(null));
     } catch {
-      const cachedTx = getCachedTransactions(month, year);
-      const cachedSum = getCachedSummary(month, year);
+      const cachedTx = getCachedTransactions(month, year) as Transaction[] | null;
+      const cachedSum = getCachedSummary(month, year) as SummaryData | null;
       setTransactions(cachedTx || []);
       setSummary(cachedSum || null);
     } finally {
@@ -152,7 +165,7 @@ export default function Home() {
     type: p.type,
     date: p.date,
     description: p.description,
-    category: { name: p.categoryName },
+    category: { _id: p.category, name: p.categoryName, type: p.type },
     _pending: true,
   }));
   let displayTransactions = [...transactions, ...pendingAsListItems].sort(

@@ -5,6 +5,7 @@ export interface user {
       username: string;
       email: string;
       image: string;
+      monthlyIncome: number;
       [prop: string]: unknown;
     };
     authUser: {

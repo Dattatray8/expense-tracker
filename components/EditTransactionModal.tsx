@@ -3,27 +3,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { Transaction } from "@/types/transaction.types";
 
 interface Category {
   _id: string;
   name: string;
   type: "income" | "expense";
-}
-
-interface Transaction {
-  _id: string;
-  amount: number;
-  type: "income" | "expense";
-  category?: {
-    _id: string;
-    name: string;
-    color?: string;
-    icon?: string;
-    type: "income" | "expense";
-  };
-  date: string | Date;
-  description?: string;
-  _pending?: boolean;
 }
 
 interface EditTransactionModalProps {
