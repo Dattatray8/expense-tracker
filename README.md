@@ -66,6 +66,17 @@ Redux was chosen over simpler alternatives because the app manages shared state 
 
 ---
 
+## Test Account
+
+A demo account is available to evaluate the app without signing up:
+
+| Field | Value |
+|---|---|
+| Email | datta@gmail.com |
+| Password | Datta123 |
+
+---
+
 ## Features Beyond Assignment Scope
 
 These were built as part of the production app and go beyond what was required:
