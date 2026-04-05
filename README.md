@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Expense Tracker — Finance Dashboard
+---
 
-## Getting Started
+## Overview
 
-First, run the development server:
+This is a fully functional, personal finance dashboard I built prior to this assignment. It goes beyond the assignment scope by including a real backend, authentication, and persistent data — but it covers every core requirement listed. Rather than rebuilding a similar project from scratch, I am submitting this as it demonstrates a stronger understanding of the same concepts.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How It Meets the Assignment Requirements
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Dashboard Overview
+The main dashboard displays:
+- **Total Limit / Base Income** — user-defined monthly baseline
+- **Current Expenses** — total expenses for the selected month with percentage of budget spent
+- **Remaining Balance** — dynamically calculated including extra income
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Visualizations include:
+- **Daily Spending Trends** — a time-based line chart showing expense and income trends across days of the month
+- **Expenses by Category** — a categorical pie/donut chart showing spending distribution across all categories
 
-## Learn More
+### 2. Transactions Section
+The Activity section displays all transactions with:
+- Date, amount, category, and type (income/expense)
+- **Search** by description or category
+- **Filter** by category using a dropdown
+- **Edit** transactions inline
+- **Export CSV** functionality built in
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Insights Section
+The **Smart AI Insights** section dynamically generates observations such as:
+- Savings rate analysis ("Great Saver — saving over 60% of income")
+- Category concentration alerts ("Category Heavy — over 50% going to Travel")
+- Largest expense and top spending category cards
+- Budget by category with progress bars showing spend vs limit
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. State Management
+State is managed using **Redux Toolkit** with the following slices:
+- Transactions data
+- Selected month/date filter
+- User role and session state
+- Budget limits per category
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Redux was chosen over simpler alternatives because the app manages shared state across multiple deeply nested components (dashboard, activity feed, insights, budget tracker).
 
-## Deploy on Vercel
+### 6. UI and UX
+- Clean, modern design with light and dark mode support
+- Fully responsive across mobile, tablet, and desktop
+- Empty states handled gracefully (e.g., "No recurring items. Add rent, subscriptions, etc.")
+- Smooth transitions and intuitive navigation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| State Management | Redux Toolkit |
+| Backend | Next.js API Routes (Node.js) |
+| Database | MongoDB (Mongoose) |
+| Authentication | NextAuth.js |
+| Deployment | Vercel |
+
+---
+
+## Features Beyond Assignment Scope
+
+These were built as part of the production app and go beyond what was required:
+
+- Full authentication with NextAuth (Google / credentials)
+- Real MongoDB backend with per-user data isolation
+- Recurring transactions tracker
+- Budget limits per category with progress visualization
+- AI-generated dynamic financial insights
+- Month-by-month navigation
+- Export CSV
+
+---
